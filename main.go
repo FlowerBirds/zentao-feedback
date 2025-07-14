@@ -54,7 +54,7 @@ func loginZentao(username, password string) error {
 }
 
 // 1. 触发后台查询，带 product 和 status 参数
-func triggerSearch(product, status string, openedDate string) (string, error) {
+func triggerSearch(product, status string, openedDate string, year string) (string, error) {
 	url := baseUrl + "/biz/search-buildQuery.html" // 替换为实际地址
 	// 构建表单参数
 	params := map[string]string{
@@ -118,6 +118,17 @@ func triggerSearch(product, status string, openedDate string) (string, error) {
 		params["operator5"] = ">="
 		params["value5"] = openedDate
 	}
+
+	if year != "" {
+		params["field2"] = "openedDate"
+		params["operator2"] = ">="
+		params["value2"] = year + "-01-01"
+
+		params["field3"] = "openedDate"
+		params["operator3"] = "<="
+		params["value3"] = year + "-12-31"
+	}
+
 	statusCode, content, err := DoPost(url, params)
 	log.Println("Status Code:", statusCode)
 	if err != nil {
@@ -154,6 +165,7 @@ func main() {
 	r := gin.Default()
 	sessionId = genZentaoSID()
 	r.GET("/api/feedback/overview", func(c *gin.Context) {
+		year := c.Query("year")
 		username := os.Getenv("ZENTAO_USER")
 		password := os.Getenv("ZENTAO_PASS")
 		if username == "" || password == "" {
@@ -173,7 +185,7 @@ func main() {
 			var message []string
 			var num = 0
 			for _, status := range allStatus {
-				_, err = triggerSearch(product.value, status.value, "")
+				_, err = triggerSearch(product.value, status.value, "", year)
 				if err != nil {
 					c.String(500, "查询触发失败: %v", err)
 					return
@@ -193,7 +205,7 @@ func main() {
 			// 本周新增
 			monday := getThisWeekMonday()
 			log.Println(monday.Format("2006-01-02"))
-			_, err = triggerSearch(product.value, "", monday.Format("2006-01-02"))
+			_, err = triggerSearch(product.value, "", monday.Format("2006-01-02"), "")
 			if err != nil {
 				c.String(500, "查询触发失败: %v", err)
 				return
