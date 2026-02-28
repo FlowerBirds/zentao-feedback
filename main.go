@@ -17,10 +17,10 @@ var cookies, _ = cookiejar.New(nil)
 var baseUrl = os.Getenv("ZENTAO_URL")
 
 var allProduct = [...]Tuple{
-	{name: "TempoBI", value: "1"},
 	{name: "TempoAI", value: "2"},
+	{name: "TempoBI", value: "1"},
 	{name: "TempoDF", value: "3"},
-	{name: "TempoMDM", value: "15"},
+	{name: "主数据", value: "15"},
 }
 
 var allStatus = [...]Tuple{
